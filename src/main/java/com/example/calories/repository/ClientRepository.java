@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
-    @Query("SELECT u FROM Client u WHERE u.client_id =?1")
+    @Query("SELECT u FROM #{#entityName} u WHERE u.client_id =?1")
     Client findByClientId(Long client_id);
 }

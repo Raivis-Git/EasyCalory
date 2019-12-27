@@ -52,10 +52,8 @@ public class ClientController {
 
     @GetMapping("client/{clientId}/calculateCalories")
     public JSONCalories countCalories(@PathVariable Long clientId) throws Exception {
-        JSONCalories jsonCalories;
         Client client = clientRepository.findByClientId(clientId);
-        jsonCalories = P_Client.getCalories(client);
-        return jsonCalories;
+        return P_Client.getCalories(client);
     }
 
     @DeleteMapping("/clients/{clientId}")

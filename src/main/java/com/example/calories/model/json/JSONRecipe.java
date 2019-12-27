@@ -17,6 +17,29 @@ public class JSONRecipe {
     private String title;
     private List<Quantity> quantity;
     private List<Unit> unit;
+    private NutrValuesPer100g nutr_values_per100g;
+    private List<Double> weight_per_ingr;
+
+    public List<Double> getWeight_per_ingr() {
+        return weight_per_ingr;
+    }
+
+    public void setWeight_per_ingr(List<Double> weight_per_ingr) {
+        this.weight_per_ingr = weight_per_ingr;
+    }
+
+    public NutrValuesPer100g getNutr_values_per100g() {
+        return nutr_values_per100g;
+    }
+
+    public void setNutr_values_per100g(NutrValuesPer100g nutr_values_per100g) {
+        this.nutr_values_per100g = nutr_values_per100g;
+    }
+
+    public Double getEnergyToCal100g() {
+        NutrValuesPer100g nutr = getNutr_values_per100g();
+        return nutr.getEnergy() / 4.18;
+    }
 
     public List<Unit> getUnit() {
         return unit;
@@ -113,6 +136,23 @@ public class JSONRecipe {
         return text;
     }
 
+    public Set<String> getSetIngredient() {
+        List<Ingredients> ingredientsList = getIngredients();
+        Set<String> ingredientsSet = new TreeSet<>();
+        for (Ingredients ingredients : ingredientsList) {
+            try {
+                String text = ingredients.getText().trim();
+                if (text.contains(","))
+                ingredientsSet.add(text.substring(0, text.indexOf(",")));
+                else
+                    ingredientsSet.add(text);
+            } catch (Exception e) {
+                System.out.println(ingredients.getText());
+            }
+        }
+        return ingredientsSet;
+    }
+
     public void setIngredients(List<Ingredients> ingredients) {
         this.ingredients = ingredients;
     }
@@ -150,6 +190,15 @@ public class JSONRecipe {
         return nutritionList;
     }
 
+    public List<Double> getNutritionEnergyToKCal() {
+        List<Double> nutrList = new ArrayList<>();
+        List<NutritionPerIngredient> nutritionPerIngredients = getNutr_per_ingredient();
+        for (NutritionPerIngredient nutr : nutritionPerIngredients) {
+            nutrList.add(nutr.getNrg()/4.18);
+        }
+        return nutrList;
+    }
+
     public void setNutr_per_ingredient(List<NutritionPerIngredient> nutr_per_ingredient) {
         this.nutr_per_ingredient = nutr_per_ingredient;
     }
@@ -177,28 +226,125 @@ public class JSONRecipe {
     public List<Double> getListDoubleQuantity() {
         List<Quantity> quantities = getQuantity();
         List<Double> quantitiesDouble = new ArrayList<>();
-        for (Quantity quant : quantities) {
-            Double result;
-            if (quant.getText().contains("+")) {
-                String[] str = quant.getText().trim().split("\\+");
+
+            for (Quantity quant : quantities) {
+                try {
+                Double result = 0.0;
+                if (quant.getText().contains("+")) {
+                    String[] str = quant.getText().trim().split("\\+");
+                    result = Double.parseDouble(str[0]) + Double.parseDouble(str[1]);
+                } else if (quant.getText().contains("to")) {
+                    String[] str = quant.getText().trim().split("to");
+                    for (int i = 0; i<str.length; i++) {
+                        if (str[i].trim().contains(" ")) {
+                            result += Double.parseDouble(str[i].trim().substring(0, str[i].trim().indexOf(" ")));
+                        } else if (str[i].contains("/")) {
+                            String[] secondStr = str[i].split("\\/");
+                            result += Double.parseDouble(secondStr[0].trim()) / Double.parseDouble(secondStr[1].trim());
+                        } else {
+                            result += Double.parseDouble(str[i]);
+                        }
+                    }
+                    result = result / 2;
+                } else if (quant.getText().contains("-")) {
+                    String[] str = quant.getText().trim().split("\\-");
+                    for (int i = 0; i < str.length; i++) {
+                        if (str[i].trim().contains(" ")) {
+                            result += Double.parseDouble(str[i].trim().substring(0, str[i].trim().indexOf(" ")));
+                        } else if (str[i].contains("/")) {
+                            String[] secondStr = str[i].split("\\/");
+                            result += Double.parseDouble(secondStr[0].trim()) / Double.parseDouble(secondStr[1].trim());
+                        } else {
+                            result += Double.parseDouble(str[i]);
+                        }
+                    }
+                    result = result / 2;
+                } else if (quant.getText().trim().contains(" ")) {
+                    if (quant.getText().trim().substring(0,quant.getText().trim().indexOf(" ")).contains("/")) {
+                        String temp = quant.getText().trim().substring(0, quant.getText().indexOf(" "));
+                        if (temp.contains("/")) {
+                            String[] arrTemp = temp.split("\\/");
+                            result = Double.parseDouble(arrTemp[0]) / Double.parseDouble(arrTemp[1]);
+                        }
+                    } else
+                        result = Double.parseDouble(quant.getText().trim().substring(0,quant.getText().trim().indexOf(" ")));
+                } else if (quant.getText().contains("/")) {
+                    String[] str = quant.getText().trim().split("\\/");
+                    result = Double.parseDouble(str[0]) / Double.parseDouble(str[1]);
+                } else if (quant.getText().trim().contains(" ")) {
+                    result = Double.parseDouble(quant.getText().trim().substring(0, quant.getText().trim().indexOf(" ")));
+                } else if (quant.getText().contains("*")) {
+                    String[] str = quant.getText().trim().split("\\*");
+                    result = Double.parseDouble(str[0]) * Double.parseDouble(str[1]);
+                } else {
+                    result = Double.parseDouble(quant.getText().trim());
+                }
+                quantitiesDouble.add(result);
+            } catch (Exception e) {
+                System.out.println(quant.getText());
+            }
+            }
+        return quantitiesDouble;
+    }
+
+    public static void main(String[] args) {
+        List<String> stringList = new ArrayList<>();
+        stringList.add("1/4 1/2");
+        stringList.add("1/4 to 1/2");
+        stringList.add("3");
+        List<Double> quantitiesDouble = new ArrayList<>();
+        for (String quant : stringList) {
+            Double result = 0.0;
+            if (quant.contains("+")) {
+                String[] str = quant.trim().split("\\+");
                 result = Double.parseDouble(str[0]) + Double.parseDouble(str[1]);
-            } else if (quant.getText().trim().contains(" ")) {
-                result = Double.parseDouble(quant.getText().trim().substring(0,quant.getText().trim().indexOf(" ")));
-            } else if (quant.getText().contains("/")) {
-                String[] str = quant.getText().trim().split("\\/");
+            } else if (quant.contains("to")) {
+                String[] str = quant.trim().split("to");
+                for (int i = 0; i<str.length; i++) {
+                    if (str[i].trim().contains(" ")) {
+                        result += Double.parseDouble(str[i].trim().substring(0, str[i].trim().indexOf(" ")));
+                    } else if (str[i].contains("/")) {
+                        String[] secondStr = str[i].split("\\/");
+                        result += Double.parseDouble(secondStr[0].trim()) / Double.parseDouble(secondStr[1].trim());
+                    } else {
+                        result += Double.parseDouble(str[i]);
+                    }
+                }
+                result = result / 2;
+            } else if (quant.contains("-")) {
+                String[] str = quant.trim().split("\\-");
+                for (int i = 0; i<str.length; i++) {
+                    if (str[i].trim().contains(" ")) {
+                        result += Double.parseDouble(str[i].trim().substring(0, str[i].trim().indexOf(" ")));
+                    } else if (str[i].contains("/")) {
+                        String[] secondStr = str[i].split("\\/");
+                        result += Double.parseDouble(secondStr[0].trim()) / Double.parseDouble(secondStr[1].trim());
+                    } else {
+                        result += Double.parseDouble(str[i]);
+                    }
+                }
+                result = result / 2;
+            } else if (quant.trim().contains(" ")) {
+                if (quant.trim().substring(0,quant.trim().indexOf(" ")).contains("/")) {
+                    String temp = quant.trim().substring(0, quant.indexOf(" "));
+                        if (temp.contains("/")) {
+                            String[] arrTemp = temp.split("\\/");
+                            result = Double.parseDouble(arrTemp[0]) / Double.parseDouble(arrTemp[1]);
+                        }
+                } else
+                    result = Double.parseDouble(quant.trim().substring(0,quant.trim().indexOf(" ")));
+            } else if (quant.contains("/")) {
+                String[] str = quant.trim().split("\\/");
                 result = Double.parseDouble(str[0]) / Double.parseDouble(str[1]);
-            } else if (quant.getText().contains("*")) {
-                String[] str = quant.getText().trim().split("\\*");
+            } else if (quant.contains("*")) {
+                String[] str = quant.trim().split("\\*");
                 result = Double.parseDouble(str[0]) * Double.parseDouble(str[1]);
-            } else if (quant.getText().contains("-")) {
-                String[] str = quant.getText().trim().split("\\-");
-                result = Double.parseDouble(str[0]) - Double.parseDouble(str[1]);
             } else {
-                result = Double.parseDouble(quant.getText().trim());
+                result = Double.parseDouble(quant.trim());
             }
             quantitiesDouble.add(result);
         }
-        return quantitiesDouble;
+        System.out.println(quantitiesDouble.toString());
     }
 
     public void setQuantity(List<Quantity> quantity) {
@@ -220,6 +366,15 @@ class NutritionPerIngredient {
     private Double fat;
     private Double sug;
     private Double pro;
+    private Double nrg;
+
+    public Double getNrg() {
+        return nrg;
+    }
+
+    public void setNrg(Double nrg) {
+        this.nrg = nrg;
+    }
 
     public Double getFat() {
         return fat;
@@ -276,6 +431,17 @@ class Unit {
 
     public void setText(String text) {
         this.text = text;
+    }
+}
+class NutrValuesPer100g {
+    private Double energy;
+
+    public Double getEnergy() {
+        return energy;
+    }
+
+    public void setEnergy(Double energy) {
+        this.energy = energy;
     }
 }
 

@@ -3,7 +3,7 @@ package com.example.calories.model;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "recipe")
+@Table(name = "recipes")
 public class Recipe {
     @Id
     @GeneratedValue(generator = "recipe_generator")
@@ -13,27 +13,38 @@ public class Recipe {
             initialValue = 1000
     )
     private Long recipeId;
-    private Double caloriesPer100Grams;
-    private Double portionWeight;
     private Double caloriesPerPortion;
+    private Double caloriesPer100g;
+    private Double weight;
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String ingredients;
+    @Column(columnDefinition = "TEXT")
     private String intructions;
+    private Boolean hasMeat;
 
-    public Double getPortionWeight() {
-        return portionWeight;
+    public Double getWeight() {
+        return weight;
     }
 
-    public void setPortionWeight(Double portionWeight) {
-        this.portionWeight = portionWeight;
+    public void setWeight(Double weight) {
+        this.weight = weight;
     }
 
-    public Double getCaloriesPer100Grams() {
-        return caloriesPer100Grams;
+    public Double getCaloriesPer100g() {
+        return caloriesPer100g;
     }
 
-    public void setCaloriesPer100Grams(Double caloriesPer100Grams) {
-        this.caloriesPer100Grams = caloriesPer100Grams;
+    public void setCaloriesPer100g(Double caloriesPer100g) {
+        this.caloriesPer100g = caloriesPer100g;
+    }
+
+    public Boolean getHasMeat() {
+        return hasMeat;
+    }
+
+    public void setHasMeat(Boolean hasMeat) {
+        this.hasMeat = hasMeat;
     }
 
     public Double getCaloriesPerPortion() {
