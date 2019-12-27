@@ -2,10 +2,9 @@ package com.example.calories.controller;
 
 import com.example.calories.exception.ResourceNotFoundException;
 import com.example.calories.model.Client;
-import com.example.calories.model.JSONCalories;
+import com.example.calories.model.json.JSONCalories;
 import com.example.calories.process.P_Client;
 import com.example.calories.repository.ClientRepository;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -2,11 +2,7 @@ package com.example.calories.process;
 
 import com.example.calories.constants.CalorieCounterConstants;
 import com.example.calories.model.Client;
-import com.example.calories.model.JSONCalories;
-import com.example.calories.repository.ClientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
+import com.example.calories.model.json.JSONCalories;
 
 public class P_Client {
 

@@ -1,4 +1,4 @@
-package com.example.calories.model;
+package com.example.calories.model.json;
 
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 

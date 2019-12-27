@@ -1,6 +1,7 @@
 package com.example.calories;
 
 import com.example.calories.model.Recipe;
+import com.example.calories.model.json.JSONRecipe;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -14,24 +15,40 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class Parser {
 // http://im2recipe.csail.mit.edu/
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-        final String Url = "\\\\nas.l24.local\\users\\raivis.treikals\\Desktop\\recipes_with_nutritional_info.json";
+        final String Url = "C:\\Users\\raivu\\Desktop\\recipes_with_nutritional_info.json";
         Gson gson = new Gson();
-        Type type = new TypeToken<List<Recipe>>() {}.getType();
-        List<Recipe> recipe = gson.fromJson(getMyJsonString() ,type);
+        Type type = new TypeToken<List<JSONRecipe>>() {}.getType();
+//        List<JSONRecipe> recipe = gson.fromJson(getMyJsonString() ,type);
         final File jsonFile = new File(Url);
         final InputStream inputStream = new DataInputStream(new FileInputStream(jsonFile));
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
-        List<Recipe> result  = new Gson().fromJson(reader, type);
+        List<JSONRecipe> result  = new Gson().fromJson(reader, type);
+        List<Double> caloryList = new ArrayList<>();
+        for (JSONRecipe jsonRecipe : result) {
+            Recipe recipe = new Recipe();
+            recipe.setTitle(jsonRecipe.getTitle());
+            recipe.setIntructions(jsonRecipe.getTextInstructions());
+            recipe.setIngredients(jsonRecipe.getTextIngredients());
 
 
-//        Gson gson = new Gson();
-//        Type type = new TypeToken<List<Recipe>>() {}.getType();
-//        List<Recipe> recipe = gson.fromJson(getMyJsonString() ,type);
+            List<Double> quantityList = jsonRecipe.getListDoubleQuantity();
+            List<Double> unitList = jsonRecipe.getListDoubleUnit();
+            List<Double> nutrList = jsonRecipe.getNutritionList();
+                Double calories = 0.0;
+            for (int i=0; i<jsonRecipe.getQuantity().size(); i++) {
+                calories += quantityList.get(i) * unitList.get(i) * nutrList.get(i);
+            }
+            caloryList.add(calories);
+        }
+
         System.out.println();
 
 
