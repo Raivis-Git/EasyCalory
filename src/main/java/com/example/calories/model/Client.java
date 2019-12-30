@@ -1,12 +1,14 @@
 package com.example.calories.model;
 
+import com.example.calories.repository.RecipeRepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "client")
-public class Client extends AuditModel {
+public class Client extends AuditModel implements Serializable {
 
     //Little to no exercise   Daily kilocalories needed = BMR x 1.2
     public static final Integer NO_EXERCISE = 1;
@@ -31,7 +33,8 @@ public class Client extends AuditModel {
             sequenceName = "client_sequence",
             initialValue = 1000
     )
-    private Long client_id;
+    @Column(name = "client_id")
+    private Long id;
     private String first_name;
     private String last_name;
     private Double weight;
@@ -43,6 +46,17 @@ public class Client extends AuditModel {
     private Boolean meat_eater;
 
     private String email;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "recipe_history_id")
+    private RecipeHistory recipeHistoryId;
+
+    public RecipeHistory getRecipeHistoryId() {
+        return recipeHistoryId;
+    }
+
+    public void setRecipeHistoryId(RecipeHistory recipeHistoryId) {
+        this.recipeHistoryId = recipeHistoryId;
+    }
 
     public Boolean getMeat_eater() {
         return meat_eater;
@@ -76,12 +90,12 @@ public class Client extends AuditModel {
         this.last_name = last_name;
     }
 
-    public Long getClient_id() {
-        return client_id;
+    public Long getId() {
+        return id;
     }
 
-    public void setClient_id(Long client_id) {
-        this.client_id = client_id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Double getWeight() {
