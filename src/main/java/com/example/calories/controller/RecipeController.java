@@ -3,10 +3,12 @@ package com.example.calories.controller;
 import com.example.calories.Parser;
 import com.example.calories.model.Client;
 import com.example.calories.model.Recipe;
+import com.example.calories.model.RecipeHistory;
 import com.example.calories.model.json.JSONRecipe;
 import com.example.calories.model.json.RequestRecipes;
 import com.example.calories.process.P_Client;
 import com.example.calories.repository.ClientRepository;
+import com.example.calories.repository.RecipeHistoryRepository;
 import com.example.calories.repository.RecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,8 @@ public class RecipeController {
     RecipeRepository recipeRepository;
     @Autowired
     ClientRepository clientRepository;
+    @Autowired
+    RecipeHistoryRepository recipeHistoryRepository;
 
     @PostMapping("/recipes/addRecipe")
     public Recipe addRecipe(@Valid @RequestBody Recipe recipe) throws FileNotFoundException, UnsupportedEncodingException {
@@ -54,18 +58,38 @@ public class RecipeController {
 
     @PostMapping(value = "/recipes", consumes = "application/json", produces = "application/json")
     public List<Recipe> returnRecipes(@RequestBody RequestRecipes requestRecipes) throws Exception {
+
+        Long clientId = requestRecipes.getClientId();
+        Client client = clientRepository.findByClientId(clientId);
+
         List<Recipe> recipeList = new ArrayList<>();
         List<Recipe> returnRecipeList = new ArrayList<>();
-        Client client = clientRepository.findByClientId(requestRecipes.getClientId());
-        List<JSONRecipe> jsonRecipeList = new ArrayList<>();
-        Double clientCalories = P_Client.getCalories(client).getCalories();
-        recipeList = recipeRepository.findAllRecipeByCalories(clientCalories/requestRecipes.getRecipeCount(), client.getMeat_eater());
+        List<RecipeHistory> oldRecipeHistoryList = recipeHistoryRepository.findAllByClientId(client);
+        List<RecipeHistory> newRecipeHistoryList = new ArrayList<>();
+
+        Double clientRecipeCalories = P_Client.getCalories(client).getCalories() / requestRecipes.getRecipeCount();
+
+        if (client.getMeat_eater())
+            recipeList = recipeRepository.findAllRecipeByCalories(clientRecipeCalories);
+        else
+            recipeList = recipeRepository.findAllRecipeByCaloriesWithoutMeat(clientRecipeCalories);
 
         for (int i = 0; i < requestRecipes.getRecipeCount(); i++) {
+
+            RecipeHistory recipeHistory = new RecipeHistory();
+
             int randomNum = ThreadLocalRandom.current().nextInt(0, recipeList.size() - 1);
-            returnRecipeList.add(recipeList.get(randomNum));
+            Recipe recipe = recipeList.get(randomNum);
+
+            returnRecipeList.add(recipe);
+            recipeHistory.setClientId(client);
+            recipeHistory.setRecipeId(recipe);
+            newRecipeHistoryList.add(recipeHistory);
             recipeList.remove(randomNum);
         }
+        recipeHistoryRepository.saveAll(newRecipeHistoryList);
+        if (oldRecipeHistoryList != null || oldRecipeHistoryList.size() != 0)
+            recipeHistoryRepository.deleteAll(oldRecipeHistoryList);
 
         return returnRecipeList;
     }

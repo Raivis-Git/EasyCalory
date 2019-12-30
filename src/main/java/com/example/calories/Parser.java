@@ -28,7 +28,7 @@ import java.util.TreeSet;
 @EntityScan("model")
 @EnableJpaRepositories("dao")
 public class Parser {
-    //  v
+    // http://im2recipe.csail.mit.edu/
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 
         RecipeDAO recipeDAO = new RecipeDAO();
@@ -101,7 +101,7 @@ public class Parser {
 
 //        DecimalFormat df4 = new DecimalFormat(".##");
 
-        final String Url = "C:\\Users\\raivu\\Desktop\\recipes_with_nutritional_info.json";
+        final String Url = "\\\\nas.l24.local\\users\\raivis.treikals\\Desktop\\recipes_with_nutritional_info.json";
         List<Recipe> recipeList = new ArrayList<>();
         Gson gson = new Gson();
         Type type = new TypeToken<List<JSONRecipe>>() {
@@ -116,6 +116,7 @@ public class Parser {
             recipe.setTitle(jsonRecipe.getTitle());
             recipe.setIntructions(jsonRecipe.getTextInstructions());
             recipe.setIngredients(jsonRecipe.getTextIngredients());
+//            recipe.setCaloriesPer100g(jsonRecipe.getNutrPer100g());
 
             if (hasMeat(jsonRecipe.getTextIngredients()) || hasMeat(jsonRecipe.getTitle())) {
                 recipe.setHasMeat(true);
@@ -124,13 +125,16 @@ public class Parser {
             }
             List<Double> quantityList = jsonRecipe.getListDoubleQuantity();
             List<Double> unitList = jsonRecipe.getListDoubleUnit();
+            List<Double> nutrList = jsonRecipe.getNutritionEnergyToKCal();
             List<Double> weightPerIngr = jsonRecipe.getWeight_per_ingr();
             Double weight = 0.0;
             for (int i = 0; i < jsonRecipe.getQuantity().size(); i++) {
+//                calories += quantityList.get(i) * unitList.get(i) * nutrList.get(i);
+//                weight += nutrList.get(i);
                 weight += weightPerIngr.get(i) * unitList.get(i) * quantityList.get(i);
             }
             Double calories = (double) Math.round(weight * jsonRecipe.getEnergyToCal100g() / 100);
-            if (calories < 1200 && calories > 99 && weight > 150 && weight < 700) {
+            if (calories < 1200 && calories > 99) {
                 recipe.setCaloriesPerPortion((double) Math.round(weight * jsonRecipe.getEnergyToCal100g()) / 100);
                 recipe.setCaloriesPer100g((double) Math.round(jsonRecipe.getEnergyToCal100g() * 100) / 100);
                 recipe.setWeight((double) Math.round(weight * 100) / 100);

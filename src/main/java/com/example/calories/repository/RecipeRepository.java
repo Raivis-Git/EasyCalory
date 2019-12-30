@@ -9,7 +9,9 @@ import java.util.List;
 
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
-    @Query("SELECT u FROM #{#entityName} u WHERE u.caloriesPerPortion > (?1 - 25.0) AND u.caloriesPerPortion < (?1 + 25.0) AND u.hasMeat = ?2")
-    List<Recipe> findAllRecipeByCalories(Double calories, Boolean hasMeat);
+    @Query("SELECT u FROM #{#entityName} u WHERE u.caloriesPerPortion > (?1 - 25.0) AND u.caloriesPerPortion < (?1 + 25.0)")
+    List<Recipe> findAllRecipeByCalories(Double calories);
+    @Query("SELECT u FROM #{#entityName} u WHERE u.caloriesPerPortion > (?1 - 25.0) AND u.caloriesPerPortion < (?1 + 25.0) AND u.hasMeat = FALSE")
+    List<Recipe> findAllRecipeByCaloriesWithoutMeat(Double calories);
 }
 

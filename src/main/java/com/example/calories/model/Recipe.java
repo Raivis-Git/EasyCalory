@@ -1,10 +1,11 @@
 package com.example.calories.model;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "recipes")
-public class Recipe {
+public class Recipe implements Serializable {
     @Id
     @GeneratedValue(generator = "recipe_generator")
     @SequenceGenerator(
@@ -12,6 +13,7 @@ public class Recipe {
             sequenceName = "recipe_sequence",
             initialValue = 1000
     )
+    @Column(name = "recipe_id")
     private Long recipeId;
     private Double caloriesPerPortion;
     private Double caloriesPer100g;
